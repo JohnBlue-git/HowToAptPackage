@@ -1,0 +1,74 @@
+# === Build Artifacts ===
+*.o
+*.ko
+*.obj
+*.elf
+*.so
+*.a
+*.d
+*.cmd
+*.mod
+*.mod.c
+*.order
+*.symvers
+*.tmp_versions
+Module.symvers
+modules.order
+
+# === Executables ===
+my-daemon
+my-bpf-sensor
+myhello
+
+# === BPF Build Artifacts ===
+*.bpf.o
+*.skel.h
+*.bpf.obj
+
+# === Debian Packaging Build Output ===
+debian/.debhelper/
+debian/debhelper-build-stamp
+debian/files
+debian/*.debhelper
+debian/*.log
+debian/*.substvars
+debian/my-daemon/
+debian/my-bpf-sensor/
+debian/my-hello-module/
+debian/tmp/
+debian/*-dbgsym/
+debian/autoreconf.*
+debian/*.deb
+debian/*.udeb
+debian/*.ddeb
+debian/*.buildinfo
+debian/*.changes
+debian/*.dsc
+debian/*.tar.*
+
+# .deb files produced by dpkg-buildpackage (placed in parent dir)
+../*.deb
+../*.ddeb
+../*.changes
+../*.buildinfo
+../*.dsc
+../*.tar.*
+
+# === IDE / Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.rej
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Documentation Build ===
+*.pdf
+*.html
+*.epub

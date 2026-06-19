@@ -1,0 +1,18 @@
+Source: my-hello-module
+Section: kernel
+Priority: optional
+Maintainer: HowToAptPackage Maintainer <maintainer@example.com>
+Build-Depends: debhelper-compat (= 13),
+               dkms,
+               linux-headers-generic | linux-headers-amd64
+Standards-Version: 4.6.2
+Homepage: https://github.com/JohnBlue-git/HowToAptPackage
+
+Package: my-hello-module
+Architecture: any
+Depends: ${misc:Depends}, dkms (>= 2.2.0.3), linux-image-generic
+Description: Sample kernel module packaged via APT with DKMS
+ This package demonstrates how to bundle a Linux kernel module in a Debian
+ package using DKMS (Dynamic Kernel Module Support). When installed, it
+ registers the module with DKMS so it gets automatically rebuilt for new
+ kernels. The module creates /proc/myhello with a greeting message.

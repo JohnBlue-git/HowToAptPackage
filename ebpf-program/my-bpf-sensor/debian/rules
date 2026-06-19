@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+# debian/rules for my-bpf-sensor
+#
+# Builds CO-RE eBPF program and user-space loader using clang + bpftool
+
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all
+export CLANG := clang
+export BPFTOOL := bpftool
+
+%:
+	dh $@ --parallel
+
+override_dh_auto_build:
+	# Build the eBPF program and user-space loader
+	$(MAKE) CC=$(CC) CLANG=$(CLANG) BPFTOOL=$(BPFTOOL)
+
+override_dh_auto_clean:
+	$(MAKE) clean
+
+override_dh_auto_install:
+	# Install the binary
+	install -D -m 755 my-bpf-sensor debian/my-bpf-sensor/usr/sbin/my-bpf-sensor
+
+override_dh_shlibdeps:
+	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
+
+override_dh_strip:
+	dh_strip --dbg-package=my-bpf-sensor-dbgsym

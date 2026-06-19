@@ -1,0 +1,24 @@
+#!/bin/sh
+# postinst script for my-daemon
+#
+# See: https://www.debian.org/doc/debian-policy/ch-maintainerscripts.html
+
+set -e
+
+case "$1" in
+    configure)
+        # Enable and start the service upon installation
+        if command -v systemctl >/dev/null 2>&1; then
+            deb-systemd-helper enable my-daemon.service >/dev/null 2>&1 || true
+            deb-systemd-helper start my-daemon.service >/dev/null 2>&1 || true
+        fi
+        ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+    *)
+        echo "postinst called with unknown argument '$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

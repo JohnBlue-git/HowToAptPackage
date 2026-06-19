@@ -1,0 +1,15 @@
+Source: my-daemon
+Section: admin
+Priority: optional
+Maintainer: HowToAptPackage Maintainer <maintainer@example.com>
+Build-Depends: debhelper-compat (= 13), gcc, libc-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/JohnBlue-git/HowToAptPackage
+
+Package: my-daemon
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, systemd
+Description: Sample systemd-managed daemon for APT packaging demonstration
+ This package demonstrates how to bundle a systemd service in a Debian package.
+ It installs a simple daemon binary and a systemd service unit that manages
+ its lifecycle (start, stop, enable, disable).

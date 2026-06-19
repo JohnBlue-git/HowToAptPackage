@@ -1,0 +1,23 @@
+#!/bin/sh
+# postinst script for my-bpf-sensor
+#
+# Handles service lifecycle after package installation.
+
+set -e
+
+case "$1" in
+    configure)
+        if command -v systemctl >/dev/null 2>&1; then
+            deb-systemd-helper enable my-bpf-sensor.service >/dev/null 2>&1 || true
+            deb-systemd-helper start my-bpf-sensor.service >/dev/null 2>&1 || true
+        fi
+        ;;
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+    *)
+        echo "postinst called with unknown argument '$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

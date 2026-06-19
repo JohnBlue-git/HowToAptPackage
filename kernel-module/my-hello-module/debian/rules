@@ -1,0 +1,31 @@
+#!/usr/bin/make -f
+# debian/rules for my-hello-module
+#
+# Uses DKMS to register and build the kernel module.
+# The module source is installed to /usr/src/<package>-<version>
+# so DKMS can rebuild it automatically for new kernels.
+
+export DEB_BUILD_MAINT_OPTIONS := hardening=+all
+
+PACKAGE_NAME := my-hello-module
+PACKAGE_VERSION := 1.0.0
+DKMS_SOURCE_DIR := /usr/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	# No build during package build - DKMS builds on the target machine
+	dh_auto_build
+
+override_dh_auto_clean:
+	dh_auto_clean
+
+override_dh_auto_install:
+	# Create the DKMS source tree
+	mkdir -p debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)
+
+	# Copy kernel module source to DKMS source directory
+	cp -a src debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
+	cp -a Makefile debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
+	cp -a dkms.conf debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/

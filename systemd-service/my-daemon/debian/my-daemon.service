@@ -1,0 +1,21 @@
+[Unit]
+Description=My Daemon - Sample systemd service from APT package
+Documentation=https://github.com/JohnBlue-git/HowToAptPackage
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/my-daemon
+Restart=on-failure
+RestartSec=10
+User=daemon
+Group=daemon
+
+# Security hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
