@@ -16,16 +16,18 @@ DKMS_SOURCE_DIR := /usr/src/$(PACKAGE_NAME)-$(PACKAGE_VERSION)
 
 override_dh_auto_build:
 	# No build during package build - DKMS builds on the target machine
-	dh_auto_build
+	# dh_auto_build
 
 override_dh_auto_clean:
-	dh_auto_clean
+	# Simple clean - don't invoke kernel build system clean
+	rm -rf build
+	rm -f debian/*.debhelper
 
 override_dh_auto_install:
 	# Create the DKMS source tree
-	mkdir -p debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)
+	mkdir -p debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/src
 
-	# Copy kernel module source to DKMS source directory
-	cp -a src debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
-	cp -a Makefile debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
-	cp -a dkms.conf debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
+	# Copy only source files (no build artifacts) to DKMS source directory
+	cp src/hello.c debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/src/
+	cp Makefile debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/
+	cp dkms.conf debian/$(PACKAGE_NAME)$(DKMS_SOURCE_DIR)/

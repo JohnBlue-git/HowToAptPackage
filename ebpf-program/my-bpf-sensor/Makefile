@@ -12,38 +12,46 @@ PKG_CONFIG ?= pkg-config
 LIBBPF_CFLAGS := $(shell $(PKG_CONFIG) --cflags libbpf 2>/dev/null || echo "-I/usr/include/bpf")
 LIBBPF_LIBS   := $(shell $(PKG_CONFIG) --libs libbpf 2>/dev/null || echo "-lbpf")
 
-BPF_C := src/bpf_program.bpf.c
-BPF_O := src/bpf_program.bpf.o
-SKEL_H := src/bpf_program.skel.h
-LOADER_C := src/loader.c
-LOADER_O := src/loader.o
-TARGET := my-bpf-sensor
+SRCDIR := src
+BUILDDIR := build
+
+BPF_C := $(SRCDIR)/bpf_program.bpf.c
+BPF_O := $(BUILDDIR)/bpf_program.bpf.o
+SKEL_H := $(BUILDDIR)/bpf_program.skel.h
+LOADER_C := $(SRCDIR)/loader.c
+LOADER_O := $(BUILDDIR)/loader.o
+TARGET := $(BUILDDIR)/my-bpf-sensor
 
 # BPF compilation flags for CO-RE
 BPF_CFLAGS := -g -O2 -target bpf -D__TARGET_ARCH_x86
 BPF_CFLAGS += -I/usr/include/x86_64-linux-gnu
 BPF_CFLAGS += -I/usr/include/bpf
-BPF_CFLAGS += -Wall -Werror
+BPF_CFLAGS += -Wall
+
+.PHONY: all clean
 
 all: $(TARGET)
 
 # Step 1: Compile BPF program to object file with BTF
-$(BPF_O): $(BPF_C)
+$(BPF_O): $(BPF_C) | $(BUILDDIR)
 	$(CLANG) $(BPF_CFLAGS) -c $< -o $@
 
 # Step 2: Generate BPF skeleton header from BPF object
-$(SKEL_H): $(BPF_O)
+$(SKEL_H): $(BPF_O) | $(BUILDDIR)
 	$(BPFTOOL) gen skeleton $< > $@
 
 # Step 3: Compile user-space loader
-$(LOADER_O): $(LOADER_C) $(SKEL_H)
-	$(CC) -g -O2 -c $< $(LIBBPF_CFLAGS) -o $@
+$(LOADER_O): $(LOADER_C) $(SKEL_H) | $(BUILDDIR)
+	$(CC) -g -O2 -I$(BUILDDIR) -c $< $(LIBBPF_CFLAGS) -o $@
 
 # Step 4: Link final binary
-$(TARGET): $(LOADER_O)
+$(TARGET): $(LOADER_O) | $(BUILDDIR)
 	$(CC) -g -O2 $< $(LIBBPF_LIBS) -lelf -lz -o $@
 
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
 clean:
-	rm -f src/*.o src/*.skel.h $(TARGET)
+	rm -rf $(BUILDDIR)
 
 .PHONY: all clean

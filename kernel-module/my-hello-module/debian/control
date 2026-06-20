@@ -2,7 +2,7 @@ Source: my-hello-module
 Section: kernel
 Priority: optional
 Maintainer: HowToAptPackage Maintainer <maintainer@example.com>
-Build-Depends: debhelper-compat (= 13),
+Build-Depends: debhelper (>= 13),
                dkms,
                linux-headers-generic | linux-headers-amd64
 Standards-Version: 4.6.2

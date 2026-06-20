@@ -6,6 +6,32 @@ This directory contains a sample Debian package (`my-hello-module`) that demonst
 
 A simple kernel module that creates `/proc/myhello` with a greeting message. It demonstrates the complete lifecycle of an APT-packaged kernel module: build, install, load, unload, and remove — all with DKMS integration.
 
+### Verified Build & Install
+
+```bash
+cd kernel-module/my-hello-module
+
+# Install build dependencies
+sudo apt install debhelper fakeroot dkms linux-headers-generic
+sudo apt build-dep ./
+
+# Build the binary package
+dpkg-buildpackage -us -uc -b
+
+# Install
+sudo apt install ../my-hello-module_*.deb
+
+# Verify DKMS built and loaded the module
+dkms status
+lsmod | grep myhello
+ls -la /usr/src/my-hello-module-1.0.0/
+
+# Remove
+sudo apt remove my-hello-module
+```
+
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+
 ### What This Demonstrates
 
 | Concept | Implementation |
@@ -23,37 +49,15 @@ A simple kernel module that creates `/proc/myhello` with a greeting message. It 
 |------|---------|
 | `debian/control` | Package metadata with `dkms` and `linux-image-generic` dependencies |
 | `debian/rules` | Installs source to `/usr/src/<pkg>-<ver>/` for DKMS |
+| `debian/changelog` | **Required** — version history (was missing, added) |
+| `debian/compat` | Debhelper compatibility level 13 (was missing, added) |
 | `debian/source/format` | Source format `3.0 (quilt)` |
 | `debian/postinst` | Registers with DKMS, builds, installs, and loads the module |
 | `debian/prerm` | Unloads the module and removes it from DKMS |
 | `dkms.conf` | DKMS configuration: package name, version, build commands |
 | `Makefile` | Kernel module build system (works with both direct and DKMS builds) |
 
-### Build & Install
-
-```bash
-cd kernel-module/my-hello-module
-
-# Install build dependencies
-sudo apt install dkms linux-headers-generic
-sudo apt build-dep ./
-
-# Build the binary package
-dpkg-buildpackage -us -uc -b
-
-# Install
-sudo apt install ../my-hello-module_*.deb
-
-# Verify the module is loaded
-lsmod | grep myhello
-cat /proc/myhello
-
-# Check kernel messages
-dmesg | grep myhello
-
-# Remove
-sudo apt remove my-hello-module
-```
+> **Note:** The `debian/rules` `override_dh_auto_clean` uses a simple `rm` instead of invoking the kernel build system clean, because the kernel headers may not match the running kernel during package build on a different machine.
 
 ### How DKMS Works
 
@@ -63,7 +67,7 @@ DKMS (Dynamic Kernel Module Support) solves the problem of kernel module compati
 
 2. **Kernel update**: When a new kernel is installed (e.g., via `apt upgrade`), DKMS automatically rebuilds all registered modules for the new kernel. This happens via the kernel post-install hooks.
 
-3. **Module lifecycle**: The module `.ko` file lives in `/lib/modules/<kernel-version>/extra/myhello.ko`. The `depmod` command updates module dependencies so `modprobe` can find it.
+3. **Module lifecycle**: The module `.ko` file lives in `/lib/modules/<kernel-version>/updates/dkms/myhello.ko`. The `depmod` command updates module dependencies so `modprobe` can find it.
 
 ### Build Pipeline
 

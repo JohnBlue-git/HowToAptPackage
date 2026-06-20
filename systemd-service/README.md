@@ -6,12 +6,37 @@ This directory contains a sample Debian package (`my-daemon`) that demonstrates 
 
 A simple daemon written in C that logs a "service is running" message every 30 seconds via syslog. It is managed by systemd and demonstrates best practices for APT-packaged services.
 
+### Verified Build & Install
+
+```bash
+cd systemd-service/my-daemon
+
+# Install build dependencies
+sudo apt install debhelper gcc fakeroot
+sudo apt build-dep ./
+
+# Build the binary package
+dpkg-buildpackage -us -uc -b
+
+# Install
+sudo apt install ../my-daemon_*.deb
+
+# Verify the files are installed
+ls -la /usr/sbin/my-daemon
+ls -la /usr/lib/systemd/system/my-daemon.service
+
+# Remove
+sudo apt remove my-daemon
+```
+
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+
 ### What This Demonstrates
 
 | Concept | Implementation |
 |---------|---------------|
 | **Binary installation** | `debian/rules` compiles `src/main.c` and installs to `/usr/sbin/my-daemon` |
-| **systemd service unit** | `debian/my-daemon.service` is installed to `/lib/systemd/system/` |
+| **systemd service unit** | `debian/my-daemon.service` is installed by `dh_installsystemd` |
 | **Auto-enable on install** | `debian/postinst` calls `deb-systemd-helper enable/start` |
 | **Auto-stop on remove** | `debian/prerm` calls `deb-systemd-helper stop` |
 | **Service hardening** | `my-daemon.service` uses `NoNewPrivileges`, `PrivateTmp`, `ProtectSystem` |
@@ -23,38 +48,18 @@ A simple daemon written in C that logs a "service is running" message every 30 s
 |------|---------|
 | `debian/control` | Package metadata with `systemd` dependency |
 | `debian/rules` | Build recipe using `dh` + custom override targets |
+| `debian/changelog` | **Required** — version history (was missing, added) |
 | `debian/compat` | Debhelper compatibility level 13 |
 | `debian/source/format` | Source format `3.0 (quilt)` |
-| `debian/install` | Installs the `.service` file to `lib/systemd/system/` |
 | `debian/my-daemon.service` | systemd unit file for the daemon |
 | `debian/postinst` | Enables and starts the service after installation |
 | `debian/prerm` | Stops the service before removal |
 
-### Build & Install
-
-```bash
-cd systemd-service/my-daemon
-
-# Install build dependencies
-sudo apt build-dep ./
-
-# Build the binary package
-dpkg-buildpackage -us -uc -b
-
-# Install
-sudo apt install ../my-daemon_*.deb
-
-# Verify the service is running
-systemctl status my-daemon
-journalctl -u my-daemon -f
-
-# Remove
-sudo apt remove my-daemon
-```
+> **Note:** We do NOT use `debian/install` — `dh_installsystemd` automatically detects and installs the `.service` file. An explicit `debian/install` would cause duplicate file conflicts on merged-usr systems where `/lib` is a symlink to `/usr/lib`.
 
 ### How It Works
 
-1. **Install**: `apt install my-daemon` copies the binary to `/usr/sbin/` and the `.service` to `/lib/systemd/system/`, then runs `postinst` which calls `systemctl enable --now my-daemon`.
+1. **Install**: `apt install my-daemon` copies the binary to `/usr/sbin/` and the `.service` to `/usr/lib/systemd/system/`, then runs `postinst` which calls `systemctl enable --now my-daemon`.
 2. **Runtime**: The daemon logs to syslog every 30 seconds. It responds to `SIGTERM` for graceful shutdown.
 3. **Remove**: `apt remove my-daemon` runs `prerm` which stops the service via `systemctl stop`, then removes all files.
 

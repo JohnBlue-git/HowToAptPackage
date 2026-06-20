@@ -16,13 +16,15 @@ override_dh_auto_build:
 
 override_dh_auto_clean:
 	$(MAKE) clean
+	rm -f debian/*.debhelper
 
 override_dh_auto_install:
-	# Install the binary
-	install -D -m 755 my-bpf-sensor debian/my-bpf-sensor/usr/sbin/my-bpf-sensor
+	# Install the binary from build directory
+	install -D -m 755 build/my-bpf-sensor debian/my-bpf-sensor/usr/sbin/my-bpf-sensor
 
 override_dh_shlibdeps:
 	dh_shlibdeps --dpkg-shlibdeps-params=--ignore-missing-info
 
 override_dh_strip:
-	dh_strip --dbg-package=my-bpf-sensor-dbgsym
+	dh_strip -pmy-bpf-sensor
+

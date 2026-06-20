@@ -1,4 +1,9 @@
 # === Build Artifacts ===
+# Out-of-tree build directories
+build/
+**/build/
+
+# Object files
 *.o
 *.ko
 *.obj
@@ -45,6 +50,12 @@ debian/*.buildinfo
 debian/*.changes
 debian/*.dsc
 debian/*.tar.*
+
+# Consolidated build output directories
+systemd-service/*/build-output/
+ebpf-program/*/build-output/
+kernel-module/*/build-output/
+build-output/
 
 # .deb files produced by dpkg-buildpackage (placed in parent dir)
 ../*.deb

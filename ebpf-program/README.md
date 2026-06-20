@@ -6,6 +6,32 @@ This directory contains a sample Debian package (`my-bpf-sensor`) that demonstra
 
 An eBPF-based process exec monitor that traces `execve` syscalls and reports them to user-space via a ring buffer. It uses the CO-RE approach with BTF (BPF Type Format) to work across different kernel versions without modification.
 
+### Verified Build & Install
+
+```bash
+cd ebpf-program/my-bpf-sensor
+
+# Install build dependencies
+sudo apt install debhelper fakeroot clang llvm libbpf-dev \
+                 linux-tools-common linux-tools-azure pkg-config
+sudo apt build-dep ./
+
+# Build the binary package
+dpkg-buildpackage -us -uc -b
+
+# Install
+sudo apt install ../my-bpf-sensor_*.deb
+
+# Verify the files are installed
+ls -la /usr/sbin/my-bpf-sensor
+ls -la /usr/lib/systemd/system/my-bpf-sensor.service
+
+# Remove
+sudo apt remove my-bpf-sensor
+```
+
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+
 ### What This Demonstrates
 
 | Concept | Implementation |
@@ -23,38 +49,12 @@ An eBPF-based process exec monitor that traces `execve` syscalls and reports the
 |------|---------|
 | `debian/control` | Package metadata with `libbpf1`, `clang`, `bpftool` build-deps |
 | `debian/rules` | Build recipe calling the project `Makefile` |
+| `debian/changelog` | **Required** — version history (was missing, added) |
+| `debian/compat` | Debhelper compatibility level 13 (was missing, added) |
 | `debian/source/format` | Source format `3.0 (quilt)` |
-| `debian/install` | Installs the `.service` file to `lib/systemd/system/` |
 | `debian/my-bpf-sensor.service` | systemd unit with `CAP_BPF` capabilities |
 | `debian/postinst` | Enables and starts the sensor service |
 | `debian/prerm` | Stops the sensor service before removal |
-
-### Build & Install
-
-```bash
-cd ebpf-program/my-bpf-sensor
-
-# Install build dependencies
-sudo apt install clang llvm libbpf-dev bpftool linux-headers-generic
-sudo apt build-dep ./
-
-# Build the binary package
-dpkg-buildpackage -us -uc -b
-
-# Install
-sudo apt install ../my-bpf-sensor_*.deb
-
-# Verify the sensor is running
-systemctl status my-bpf-sensor
-journalctl -u my-bpf-sensor -f
-
-# Test: run a command and watch the eBPF events
-ls /tmp
-journalctl -u my-bpf-sensor --since "1 minute ago"
-
-# Remove
-sudo apt remove my-bpf-sensor
-```
 
 ### Build Pipeline
 
@@ -71,11 +71,14 @@ bpf_program.skel.h         # Generated C header: BPF skeleton
 loader.c ──────────────────► my-bpf-sensor (user-space binary)
 ```
 
+> **Note:** The skeleton struct name is derived from the BPF source filename.  
+> `bpf_program.bpf.c` → `struct bpf_program_bpf` → functions `bpf_program_bpf__open()`, `__load()`, `__attach()`, etc.
+
 ### How CO-RE Works
 
 1. **Compile with BTF**: The BPF program is compiled with `-g` to embed BTF (BPF Type Format) information. BTF describes kernel data structures in a version-agnostic way.
 
-2. **Generate skeleton**: `bpftool gen skeleton` creates a C header file that provides functions like `my_bpf_sensor_bpf__open()`, `__load()`, `__attach()`. This skeleton handles CO-RE relocations automatically.
+2. **Generate skeleton**: `bpftool gen skeleton` creates a C header file that provides functions like `bpf_program_bpf__open()`, `__load()`, `__attach()`. This skeleton handles CO-RE relocations automatically.
 
 3. **Runtime relocation**: When `libbpf` loads the BPF object, it reads BTF from both the object file and the running kernel (`/sys/kernel/btf/vmlinux`). It then relocates field offsets — for example, if `task_struct->pid` moved between kernel versions, libbpf adjusts the offset automatically.
 

@@ -2,11 +2,12 @@ Source: my-bpf-sensor
 Section: utils
 Priority: optional
 Maintainer: HowToAptPackage Maintainer <maintainer@example.com>
-Build-Depends: debhelper-compat (= 13),
+Build-Depends: debhelper (>= 13),
                clang,
                llvm,
                libbpf-dev,
-               bpftool,
+               linux-tools-common,
+               linux-tools-generic | linux-tools-azure,
                linux-headers-generic | linux-headers-amd64,
                pkg-config
 Standards-Version: 4.6.2
@@ -15,7 +16,7 @@ Homepage: https://github.com/JohnBlue-git/HowToAptPackage
 Package: my-bpf-sensor
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libbpf1 (>= 1.0.0)
-Recommends: linux-image-$(flat-modules:=$(KERNEL_RELEASE)) | linux-image-generic
+Recommends: linux-image-generic
 Description: CO-RE eBPF process exec sensor packaged for APT
  This package demonstrates how to bundle a CO-RE (Compile Once - Run Everywhere)
  eBPF program in a Debian package. It traces process exec events using an eBPF

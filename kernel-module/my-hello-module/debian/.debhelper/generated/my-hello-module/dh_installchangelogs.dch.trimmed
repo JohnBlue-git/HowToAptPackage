@@ -1,0 +1,6 @@
+my-hello-module (1.0.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * Sample kernel module demonstrating DKMS-based APT packaging.
+
+ -- HowToAptPackage Maintainer <maintainer@example.com>  Mon, 01 Jan 2024 00:00:00 +0000

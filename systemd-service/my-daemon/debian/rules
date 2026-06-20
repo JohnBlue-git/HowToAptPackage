@@ -4,11 +4,15 @@
 	dh $@
 
 override_dh_auto_build:
-	gcc -Wall -O2 -o src/my-daemon src/main.c
+	$(MAKE) -f Makefile
 
 override_dh_auto_clean:
-	rm -f src/my-daemon
+	$(MAKE) -f Makefile clean
+	rm -f debian/*.debhelper
 
 override_dh_auto_install:
-	# Install the binary
-	install -D -m 755 src/my-daemon debian/my-daemon/usr/sbin/my-daemon
+	# Install the binary from build directory
+	install -D -m 755 build/my-daemon debian/my-daemon/usr/sbin/my-daemon
+
+override_dh_builddeb:
+	dh_builddeb

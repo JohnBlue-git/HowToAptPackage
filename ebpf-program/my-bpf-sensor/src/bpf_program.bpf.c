@@ -35,7 +35,7 @@ SEC("tracepoint/syscalls/sys_enter_execve")
 int trace_execve(struct trace_event_raw_sys_enter *ctx)
 {
     struct exec_event *event;
-    pid_t pid;
+    __u32 pid;
     __u32 uid;
 
     pid = bpf_get_current_pid_tgid() >> 32;

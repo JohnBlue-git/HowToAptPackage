@@ -1,0 +1,4 @@
+9f17ab4c36357020f8b68c3c14835b82  usr/share/doc/my-hello-module/changelog.Debian.gz
+3c77ca5dd376a02552b9bb113c55873c  usr/src/my-hello-module-1.0.0/Makefile
+a8c5215f6f366069b766ca527476d115  usr/src/my-hello-module-1.0.0/dkms.conf
+d147e6ecf1d898b104277e0f643aa4cc  usr/src/my-hello-module-1.0.0/src/hello.c

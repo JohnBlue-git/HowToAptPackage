@@ -3,10 +3,10 @@
 A comprehensive sample project demonstrating how to create Debian/APT packages for three types of system-level components:
 
 1. **systemd-service/** — A systemd-managed daemon (user-space binary + systemd unit)
-2. **ebpf-program/** — A CO-RE (Compile Once - Run Everywhere) eBPF program
+2. **ebpf-program/** — A CO-RE (Compile Once - Run Everywhere) eBPF program  
 3. **kernel-module/** — A Linux kernel module with DKMS support
 
-Each sub-project is a fully structured Debian source package that can be built with `dpkg-buildpackage` and installed/removed with `apt`.
+Each sub-project is a fully structured Debian source package that can be built with `dpkg-buildpackage` and installed/removed with `apt`. All three packages have been **verified with real build, install, and remove tests**.
 
 ---
 
@@ -26,17 +26,17 @@ A Debian package (`.deb`) is an archive that contains:
 |------|---------|
 | `debian/control` | Package metadata: name, version, dependencies, description |
 | `debian/rules` | Build script (Makefile) — tells `dpkg-buildpackage` how to compile and install |
+| `debian/changelog` | **Required** — version history and release notes |
 | `debian/compat` | Debhelper compatibility level (currently 13) |
 | `debian/source/format` | Source package format (`3.0 (quilt)` is the modern standard) |
-| `debian/install` | Lists files to install and their target paths |
-| `debian/*.service` | systemd service unit files (auto-detected by dh_installinit) |
+| `debian/*.service` | systemd service unit files (auto-detected by `dh_installsystemd`) |
 | `debian/postinst` | Post-installation script (e.g., start a service, load a module) |
 | `debian/prerm` | Pre-removal script (e.g., stop a service, unload a module) |
 
 ### The Build Process
 
-```
-dpkg-buildpackage -us -uc
+```bash
+dpkg-buildpackage -us -uc -b
 ```
 
 This runs `debian/rules` through debhelper, which:
@@ -60,21 +60,15 @@ Upgrade:   preinst (old) → prerm (old) → postinst (new)
 - **Suggests**: Optional — user is informed but not required
 - **Build-Depends**: Required to compile the source package
 
-### Building Packages
+### Common Pitfalls (Fixed in This Project)
 
-```bash
-# Install build dependencies
-sudo apt build-dep ./
-
-# Build the package
-dpkg-buildpackage -us -uc -b
-
-# Install the resulting .deb
-sudo apt install ../<package>.deb
-
-# Remove the package
-sudo apt remove <package>
-```
+| Issue | Solution |
+|-------|----------|
+| Missing `debian/changelog` | Required by `dpkg-buildpackage` — added to all packages |
+| Missing `debian/compat` | Required by debhelper — added to eBPF and kernel packages |
+| Double compat declaration | Use either `debian/compat` file OR `debhelper-compat` in `Build-Depends`, not both |
+| systemd service in both `lib/` and `usr/lib/` | Don't use `debian/install`; let `dh_installsystemd` handle it |
+| `lib -> usr/lib` symlink conflict | On merged-usr systems, only install to `/usr/lib/systemd/system/` |
 
 ---
 
@@ -86,39 +80,61 @@ HowToAptPackage/
 ├── systemd-service/
 │   └── my-daemon/               # systemd service package
 │       ├── src/main.c           # Daemon source code
-│       └── debian/              # Debian packaging files
+│       └── debian/              # Packaging: control, rules, compat,
+│                                #   changelog, my-daemon.service,
+│                                #   postinst, prerm, source/format
 ├── ebpf-program/
 │   └── my-bpf-sensor/           # CO-RE eBPF package
-│       ├── src/                 # BPF program + user-space loader
-│       ├── Makefile             # Build system for BPF + loader
-│       └── debian/              # Debian packaging files
+│       ├── src/                 # bpf_program.bpf.c + loader.c
+│       ├── Makefile             # BPF build pipeline (clang → bpftool → gcc)
+│       └── debian/              # Packaging: control, rules, compat,
+│                                #   changelog, my-bpf-sensor.service,
+│                                #   postinst, prerm, source/format
 └── kernel-module/
     └── my-hello-module/         # Kernel module package
         ├── src/hello.c          # Module source code
-        ├── Makefile             # Kernel module build system
+        ├── Makefile             # Kbuild-compatible Makefile
         ├── dkms.conf            # DKMS configuration
-        └── debian/              # Debian packaging files
+        └── debian/              # Packaging: control, rules, compat,
+                                 #   changelog, postinst, prerm, source/format
 ```
 
----
+## Build & Install Verification
 
-## Quick Start
+### Systemd Service (my-daemon)
 
 ```bash
-# 1. Build the systemd service package
 cd systemd-service/my-daemon
 dpkg-buildpackage -us -uc -b
 sudo apt install ../my-daemon_*.deb
-
-# 2. Build the eBPF sensor package
-cd ../../ebpf-program/my-bpf-sensor
-dpkg-buildpackage -us -uc -b
-sudo apt install ../my-bpf-sensor_*.deb
-
-# 3. Build the kernel module package
-cd ../../kernel-module/my-hello-module
-dpkg-buildpackage -us -uc -b
-sudo apt install ../my-hello-module_*.deb
+sudo apt remove my-daemon
 ```
 
-See each sub-directory's README for detailed instructions.
+Files installed: `/usr/sbin/my-daemon`, `/usr/lib/systemd/system/my-daemon.service`  
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+
+### CO-RE eBPF Sensor (my-bpf-sensor)
+
+```bash
+cd ebpf-program/my-bpf-sensor
+dpkg-buildpackage -us -uc -b
+sudo apt install ../my-bpf-sensor_*.deb
+sudo apt remove my-bpf-sensor
+```
+
+Files installed: `/usr/sbin/my-bpf-sensor`, `/usr/lib/systemd/system/my-bpf-sensor.service`  
+Requires: `clang`, `llvm`, `libbpf-dev`, `bpftool`, kernel with BTF (`CONFIG_DEBUG_INFO_BTF=y`)  
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+
+### Kernel Module (my-hello-module)
+
+```bash
+cd kernel-module/my-hello-module
+dpkg-buildpackage -us -uc -b
+sudo apt install ../my-hello-module_*.deb
+sudo apt remove my-hello-module
+```
+
+Source installed: `/usr/src/my-hello-module-1.0.0/` (registered with DKMS)  
+Module built by DKMS for: current + new kernels automatically  
+**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
