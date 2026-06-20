@@ -21,9 +21,10 @@ Module.symvers
 modules.order
 
 # === Executables ===
-my-daemon
-my-bpf-sensor
-myhello
+# Ignore built package binaries only in package build directories
+systemd-service/*/build/my-daemon
+ebpf-program/*/build/my-bpf-sensor
+kernel-module/*/build/myhello
 
 # === BPF Build Artifacts ===
 *.bpf.o
@@ -41,6 +42,10 @@ debian/my-daemon/
 debian/my-bpf-sensor/
 debian/my-hello-module/
 debian/tmp/
+**/debian/my-daemon/
+**/debian/my-bpf-sensor/
+**/debian/my-hello-module/
+**/debian/tmp/
 debian/*-dbgsym/
 debian/autoreconf.*
 debian/*.deb
@@ -57,13 +62,27 @@ ebpf-program/*/build-output/
 kernel-module/*/build-output/
 build-output/
 
-# .deb files produced by dpkg-buildpackage (placed in parent dir)
-../*.deb
-../*.ddeb
-../*.changes
-../*.buildinfo
-../*.dsc
-../*.tar.*
+# .deb files produced by dpkg-buildpackage (placed in the package parent dir)
+systemd-service/*.deb
+systemd-service/*.ddeb
+systemd-service/*.changes
+systemd-service/*.buildinfo
+systemd-service/*.dsc
+systemd-service/*.tar.*
+
+ebpf-program/*.deb
+ebpf-program/*.ddeb
+ebpf-program/*.changes
+ebpf-program/*.buildinfo
+ebpf-program/*.dsc
+ebpf-program/*.tar.*
+
+kernel-module/*.deb
+kernel-module/*.ddeb
+kernel-module/*.changes
+kernel-module/*.buildinfo
+kernel-module/*.dsc
+kernel-module/*.tar.*
 
 # === IDE / Editor ===
 .vscode/

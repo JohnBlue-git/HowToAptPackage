@@ -1,0 +1,6 @@
+my-daemon (1.0.0-1) unstable; urgency=medium
+
+  * Initial release.
+  * Sample systemd-managed daemon package for APT packaging demonstration.
+
+ -- HowToAptPackage Maintainer <maintainer@example.com>  Fri, 20 Jun 2026 12:00:00 +0000
