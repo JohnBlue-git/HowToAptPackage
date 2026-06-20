@@ -30,7 +30,33 @@ ls -la /usr/src/my-hello-module-1.0.0/
 sudo apt remove my-hello-module
 ```
 
-**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+### Generated Artifacts
+
+When you run `dpkg-buildpackage`, the following files are generated in the parent directory:
+
+**Binary Package:**
+- `my-hello-module_1.0.0-1_amd64.deb` — The installable Debian package containing module source and DKMS configuration
+
+**Build Metadata:**
+- `my-hello-module_1.0.0-1.dsc` — Source package descriptor (lists dependencies, including `dkms`, `linux-headers`)
+- `my-hello-module_1.0.0.orig.tar.gz` — Original source archive
+- `my-hello-module_1.0.0-1.debian.tar.xz` — Debian-specific patches and configuration (from `debian/` directory)
+- `my-hello-module_1.0.0-1_amd64.buildinfo` — Build environment information
+- `my-hello-module_1.0.0-1_amd64.changes` — Summary of changes and package contents
+
+**Inside the `.deb` Package (visible after `dpkg -X`):**
+- `usr/src/my-hello-module-1.0.0/` — Module source directory (registered with DKMS)
+- `usr/src/my-hello-module-1.0.0/src/hello.c` — Kernel module source code
+- `usr/src/my-hello-module-1.0.0/Makefile` — Kbuild-compatible build file
+- `usr/src/my-hello-module-1.0.0/dkms.conf` — DKMS configuration for automatic rebuilds
+- `usr/share/doc/my-hello-module/` — Documentation files (changelog, copyright)
+- `DEBIAN/control` — Package metadata with `dkms` and `linux-image-generic` dependencies
+- `DEBIAN/postinst` — Post-installation script (runs `dkms add/build/install`)
+- `DEBIAN/prerm` — Pre-removal script (runs `dkms remove`)
+
+**After Installation (via DKMS):**
+- `lib/modules/<kernel-version>/extra/myhello.ko` — Compiled kernel module (built by DKMS for current kernel)
+- Additional `.ko` files for any new kernels installed after the package
 
 ### What This Demonstrates
 
@@ -136,3 +162,4 @@ DEST_MODULE_LOCATION[0]="/extra"
 
 # Auto-rebuild on kernel update
 AUTOINSTALL="yes"
+```

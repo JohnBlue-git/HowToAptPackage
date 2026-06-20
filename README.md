@@ -110,8 +110,15 @@ sudo apt install ../my-daemon_*.deb
 sudo apt remove my-daemon
 ```
 
-Files installed: `/usr/sbin/my-daemon`, `/usr/lib/systemd/system/my-daemon.service`  
-**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+Files installed: `/usr/sbin/my-daemon`, `/usr/lib/systemd/system/my-daemon.service`
+
+**Generated artifacts:**
+- `my-daemon_1.0.0-1_amd64.deb` — Binary package
+- `my-daemon_1.0.0-1.dsc` — Source package descriptor
+- `my-daemon_1.0.0.orig.tar.gz` — Original source archive
+- `my-daemon_1.0.0-1.debian.tar.xz` — Debian patches and config
+- `my-daemon_1.0.0-1_amd64.buildinfo` — Build information
+- `my-daemon_1.0.0-1_amd64.changes` — Package changes file
 
 ### CO-RE eBPF Sensor (my-bpf-sensor)
 
@@ -123,8 +130,15 @@ sudo apt remove my-bpf-sensor
 ```
 
 Files installed: `/usr/sbin/my-bpf-sensor`, `/usr/lib/systemd/system/my-bpf-sensor.service`  
-Requires: `clang`, `llvm`, `libbpf-dev`, `bpftool`, kernel with BTF (`CONFIG_DEBUG_INFO_BTF=y`)  
-**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+Requires: `clang`, `llvm`, `libbpf-dev`, `bpftool`, kernel with BTF (`CONFIG_DEBUG_INFO_BTF=y`)
+
+**Generated artifacts:**
+- `my-bpf-sensor_1.0.0-1_amd64.deb` — Binary package
+- `my-bpf-sensor_1.0.0-1.dsc` — Source package descriptor
+- `my-bpf-sensor_1.0.0.orig.tar.gz` — Original source archive
+- `my-bpf-sensor_1.0.0-1.debian.tar.xz` — Debian patches and config
+- `my-bpf-sensor_1.0.0-1_amd64.buildinfo` — Build information
+- `my-bpf-sensor_1.0.0-1_amd64.changes` — Package changes file
 
 ### Kernel Module (my-hello-module)
 
@@ -136,5 +150,12 @@ sudo apt remove my-hello-module
 ```
 
 Source installed: `/usr/src/my-hello-module-1.0.0/` (registered with DKMS)  
-Module built by DKMS for: current + new kernels automatically  
-**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+Module built by DKMS for: current + new kernels automatically
+
+**Generated artifacts:**
+- `my-hello-module_1.0.0-1_amd64.deb` — Binary package
+- `my-hello-module_1.0.0-1.dsc` — Source package descriptor
+- `my-hello-module_1.0.0.orig.tar.gz` — Original source archive
+- `my-hello-module_1.0.0-1.debian.tar.xz` — Debian patches and config
+- `my-hello-module_1.0.0-1_amd64.buildinfo` — Build information
+- `my-hello-module_1.0.0-1_amd64.changes` — Package changes file

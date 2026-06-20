@@ -29,7 +29,27 @@ ls -la /usr/lib/systemd/system/my-daemon.service
 sudo apt remove my-daemon
 ```
 
-**Test result: BUILD ✅ INSTALL ✅ REMOVE ✅**
+### Generated Artifacts
+
+When you run `dpkg-buildpackage`, the following files are generated in the parent directory:
+
+**Binary Package:**
+- `my-daemon_1.0.0-1_amd64.deb` — The installable Debian package containing the compiled daemon binary and systemd service unit
+
+**Build Metadata:**
+- `my-daemon_1.0.0-1.dsc` — Source package descriptor (lists source files, checksums, dependencies)
+- `my-daemon_1.0.0.orig.tar.gz` — Original source archive
+- `my-daemon_1.0.0-1.debian.tar.xz` — Debian-specific patches and configuration files (from `debian/` directory)
+- `my-daemon_1.0.0-1_amd64.buildinfo` — Build machine and environment information
+- `my-daemon_1.0.0-1_amd64.changes` — Summary of changes and package contents
+
+**Inside the `.deb` Package (visible after `dpkg -X`):**
+- `usr/sbin/my-daemon` — Compiled daemon binary
+- `usr/lib/systemd/system/my-daemon.service` — systemd service unit file
+- `usr/share/doc/my-daemon/` — Documentation files (changelog, copyright)
+- `DEBIAN/control` — Package metadata
+- `DEBIAN/postinst` — Post-installation script (enables and starts the service)
+- `DEBIAN/prerm` — Pre-removal script (stops the service)
 
 ### What This Demonstrates
 
@@ -86,3 +106,4 @@ ProtectHome=yes                # Hide /home
 
 [Install]
 WantedBy=multi-user.target     # Start in normal multi-user mode
+```
